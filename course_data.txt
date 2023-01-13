@@ -1,0 +1,6 @@
+Hackler (white):71.1,125.0
+tpc myrtle (white):71.0,136.0
+burning ridge (white):71.0,130.0
+Cedar (white):68.4,118.0
+rocky (blue):70.3,126.0
+rocky (white):69.0,122.0
