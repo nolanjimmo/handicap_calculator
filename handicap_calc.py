@@ -5,11 +5,13 @@
 #filenames
 
 from statistics import mean
+import pymysql
 
 
-COURSE_DATA = "course_data.txt"
-DIFF_DATA = "differentials.txt"
-INDEX_DATA = "index.txt"
+# connecting to my aws RDS instance
+db = pymysql.connect(host="database-1.cv79u4we1ktk.us-east-1.rds.amazonaws.com", user = "admin", password="Synergyfc18!", database="handicap_calc")
+# cursor instance is here
+cursor = db.cursor()
 
 
 def get_round_input(new_course=True):
@@ -41,25 +43,32 @@ def choose_option():
         choice = int(input("Choose option (enter option #):\n1. Enter from old course\n2. Enter from new course\n3. Quit\n>> "))
     return choice
 
-def read_course_file():
+def get_courses():
     # read the saved courses file
     # return dictionary of course name: (rating, slope)
     course_dict = {}
-    with open(COURSE_DATA) as infile:
-        for line in infile:
-            if line != '':
-                line = line.strip('\n')
-                data = line.split(":")
-                name = data[0]
-                rating = data[1].split(",")[0]
-                slope = data[1].split(",")[1]
-                course_dict[name] = (rating, slope)
+
+    cursor.execute("SELECT * from Courses")
+    courses = cursor.fetchall()
+    for c in courses:
+        course_dict[c[1]] = (c[2], c[3])
     return course_dict
+
+def get_indexes():
+    # read the list of index's as they have been stored
+    indexs = []
+
+    cursor.execute("SELECT * from Ind")
+    inds = cursor.fetchall()
+    for i in inds:
+        indexs.append(float(i[2]))
+
+    return indexs
 
 def choose_existing_course():
     # let the user choose from previously played courses
     # return the (rating, slope) tuple for that course
-    course_dict = read_course_file()
+    course_dict = get_courses()
     print("Stored courses:")
     for n in course_dict.keys():
         print(n)
@@ -71,9 +80,45 @@ def choose_existing_course():
     return course_dict[choice]
 
 def write_course_data(name, rating, slope):
-    # write newly played course data to course data file
-    with open(COURSE_DATA, 'a') as outfile:
-        outfile.write(f"{name}:{rating},{slope}\n")
+    # insert new course in to Courses table
+    # get indexes from courses table to add another
+    cursor.execute("SELECT id from Courses")
+    inds = cursor.fetchall()
+    next_ind = max([i[0] for i in inds]) + 1
+
+    sql = """ INSERT INTO Courses (id, name, rating, slope)
+        VALUES (%s, %s, %s, %s)
+        """
+    cursor.execute(sql, (next_ind, name, float(rating), float(slope)))
+    db.commit()
+
+def write_differential_file(diff):
+    # insert new differential in to Differentials table
+
+    # get indexes from courses table to add another
+    cursor.execute("SELECT id from Differentials")
+    inds = cursor.fetchall()
+    next_ind = max([i[0] for i in inds]) + 1
+
+    sql = """ INSERT INTO Differentials (id, username, dif)
+        VALUES (%s, %s, %s)
+        """
+    cursor.execute(sql, (next_ind, "jimmo", float(diff)))
+    db.commit()
+
+def write_index_file(index):
+    # insert new index in to Ind table
+    
+    # get indexes from courses table to add another
+    cursor.execute("SELECT id from Ind")
+    inds = cursor.fetchall()
+    next_ind = max([i[0] for i in inds]) + 1
+
+    sql = """ INSERT INTO Ind (id, username, ind)
+        VALUES (%s, %s, %s)
+        """
+    cursor.execute(sql, (next_ind, "jimmo", float(index)))
+    db.commit()
 
 def calculate_differential(score, rating, slope):
     # calculate the handicap differential for an entered round
@@ -83,40 +128,23 @@ def calculate_index(best_recent_diff_list):
     # calculate the handicap index for the golfer over their past x # of rounds
     return round(mean(best_recent_diff_list) * .96, 1)
 
-def write_differential_file(diff):
-    # keep track of history of differentials by writing them to a file
-    with open(DIFF_DATA, 'a') as outfile:
-        outfile.write(f"{diff}\n")
-
-def read_differential_file():
+def get_differentials():
     # read the differential history file
     # return the differential history as a list of at most 20 most recent diffs
     diff_list = []
-    i = 0
-    with open(DIFF_DATA) as infile:
-        for line in infile:
-            if i == 20:
-                return diff_list
-            elif line != '':
-                line = line.strip('\n')
-                diff_list.append(float(line))
+
+    cursor.execute("SELECT * from Differentials")
+    difs = cursor.fetchall()
+    for d in difs:
+        diff_list.append(float(d[2]))
+
+    if len(diff_list) > 20:
+        diff_list = diff_list[20:]
+
     return diff_list
 
-def read_index_file():
-    # read the list of index's as they have been stored
-    indexs = []
-    with open(INDEX_DATA) as infile:
-        for line in infile:
-            if line != '':
-                indexs.append(line.strip('\n'))
-    return indexs
-
-def write_index_file(index):
-    with open(INDEX_DATA, 'a') as outfile:
-        outfile.write(f"{index}\n")
-
 def main():
-    handi = read_index_file()
+    handi = get_indexes()
     if len(handi) != 0:
         print(f"Current handicap: {handi[-1]}")
     choice = choose_option()
@@ -138,7 +166,7 @@ def main():
         index = -1
 
         diff = calculate_differential(score, rating, slope)
-        diff_list = read_differential_file()
+        diff_list = get_differentials()
         diff_list.append(diff)
         most_recent = []
         if len(diff_list) < 10:
