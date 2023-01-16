@@ -1,0 +1,29 @@
+<html>
+    <body>
+
+        {% if fail == False %}
+        <h3>Your score has been saved, thank you. Click the button to return to the home page</h3>
+        <form action="/" method="POST">
+            <input type="submit" name ="return_home" value="Click Me!">
+        </form> 
+        {% endif %}
+
+        {% if fail == True %}
+            <h2>There was a problem with your input, be sure to select a course option and enter your score as an integer</h2>
+        {% endif %}
+
+        {% if fail == None or fail == True%}
+        <form action="/old_course" method="POST">
+            <p>Select the course you are entering a score for</p>
+            {% for c in courses %}
+                <input type="radio" id="{{c}}" name="course" value="{{c}}">
+                <label for="{{c}}">{{c}}</label><br>
+            {% endfor %}
+
+            <p><input type="text" name="score">Gross Score: </p>
+            <p><input type ="submit" value ="submit" /></p>
+        </form>
+        {% endif %}
+
+    </body>
+</html>

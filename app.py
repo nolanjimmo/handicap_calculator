@@ -3,6 +3,36 @@ import handicap_calc as HC
 from flask import Flask, redirect, url_for, request, render_template
 app = Flask(__name__)
 
+def calculate_values(score, rating, slope):
+    index = -1
+
+    diff = HC.calculate_differential(score, rating, slope)
+    diff_list = HC.get_differentials(instance_username)
+    diff_list.append(diff)
+    most_recent = []
+    if len(diff_list) < 10:
+        print(f"You have {len(diff_list)} entered, you need atleast 10 to compute a handicap")
+        print("This current round will be stored for future handicap")
+    elif len(diff_list) < 15:
+        most_recent = diff_list[-3:]
+        index = HC.calculate_index(most_recent)
+    elif len(diff_list) < 20:
+        most_recent = diff_list[-6:]
+        index = HC.calculate_index(most_recent)
+    else:
+        most_recent = diff_list[-20:]
+        most_recent.sort()
+        most_recent = most_recent[-10:]
+        index = HC.calculate_index(most_recent)
+
+    # store the new differential in the differentials file
+    HC.write_differential_file(instance_username, diff)
+
+    # if the index was able to be calculated (index is not -1, which it is intialized to)
+    if index != -1:
+        print(f"Handicap Index: {index}")
+        #Write to index file
+        HC.write_index_file(instance_username, index)
  
  
 @app.route('/', methods=['POST', 'GET'])
@@ -40,7 +70,8 @@ def splash():
         return render_template("enter_new.html", fail=None)
     else:
         # go to the page for entering score at a stored course
-        return "Enter old course"
+        courses = list(HC.get_courses().keys())
+        return render_template("existing.html", courses=courses, fail=None)
 
 @app.route('/new_course', methods=['POST'])
 def new_course():
@@ -53,10 +84,32 @@ def new_course():
         return render_template("enter_new.html", fail=True)
 
     if course_name != "" and score != "" and rating != "" and slope != "":
+        # add the actual data to the database and user differentials/index table
+        HC.write_course_data(course_name, rating, slope)
+
+        # second, we have to calculate the differential for this round and then calculate the index with this newest score
+        calculate_values(score, rating, slope)
+        
         return render_template("enter_new.html", fail=False)
     
     else:
         return render_template("enter_new.html", fail=True)
+
+@app.route('/old_course', methods=["POST"])
+def old_course():
+    # first, get the courses we have saved in the database
+    courses = HC.get_courses()
+    #then we'll use the input from the radio buttons as the key for that dict
+    try:
+        course_name = request.form["course"]
+        score = int(request.form["score"])
+        course_data = courses[course_name]
+        print(course_data)
+        calculate_values(score, course_data[0], course_data[1])
+        return render_template("existing.html", fail=False)
+
+    except:
+        render_template("existing.html", fail=True)
  
  
 if __name__ == '__main__':

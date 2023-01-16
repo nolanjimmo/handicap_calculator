@@ -114,7 +114,7 @@ def write_course_data(name, rating, slope):
     cursor.execute(sql, (next_ind, name, float(rating), float(slope)))
     db.commit()
 
-def write_differential_file(diff):
+def write_differential_file(username, diff):
     # insert new differential in to Differentials table
 
     # get indexes from courses table to add another
@@ -125,7 +125,7 @@ def write_differential_file(diff):
     sql = """ INSERT INTO Differentials (id, username, dif)
         VALUES (%s, %s, %s)
         """
-    cursor.execute(sql, (next_ind, "jimmo", float(diff)))
+    cursor.execute(sql, (next_ind, username, float(diff)))
     db.commit()
 
 def write_index_file(username, index):
@@ -146,12 +146,12 @@ def calculate_index(best_recent_diff_list):
     # calculate the handicap index for the golfer over their past x # of rounds
     return round(mean(best_recent_diff_list) * .96, 1)
 
-def get_differentials():
+def get_differentials(username):
     # read the differential history file
     # return the differential history as a list of at most 20 most recent diffs
     diff_list = []
 
-    cursor.execute("SELECT * from Differentials")
+    cursor.execute(f"SELECT * from Differentials WHERE username = '{username}'")
     difs = cursor.fetchall()
     for d in difs:
         diff_list.append(float(d[2]))
