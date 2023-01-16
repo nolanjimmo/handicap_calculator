@@ -1,0 +1,30 @@
+<html>
+    <body>
+
+        <h1>Enter a score from a new course</h1>
+        <p>Please provide the details of the new course</p>
+
+        {% if fail == False %}
+        <h3>Your score has been saved, thank you. Click the button to return to the home page</h3>
+        <form action="/" method="POST">
+            <input type="submit" name ="return_home" value="Click Me!">
+        </form> 
+        {% endif%}
+
+        {% if fail == True %}
+            <h2>An error occured, score not saved</h2>
+            <h3>All fields must be filled, score must be an integer and rating/slope must be numbers</h3>
+        {% endif %} 
+
+        {% if fail == None or fail == True %}
+            <form action="/new_course" method="POST">
+                <p><input type="text" name="course_name">Course Name: </p>
+                <p><input type="text" name="score">Gross Score: </p>
+                <p><input type="text" name="rating">Rating: </p>
+                <p><input type="text" name="slope">Slope: </p>
+
+                <p><input type = "submit" value = "submit" /></p>
+            </form>
+        {% endif %}
+    </body>
+</html>

@@ -79,16 +79,13 @@ def get_courses():
         course_dict[c[1]] = (c[2], c[3])
     return course_dict
 
-def get_index():
+def get_index(username):
     # read the list of index's as they have been stored
-    indexs = []
 
-    cursor.execute("SELECT * from Ind")
-    inds = cursor.fetchall()
-    for i in inds:
-        indexs.append(float(i[1]))
+    cursor.execute(f"SELECT * from Ind WHERE username = '{username}'")
+    ind = cursor.fetchall()[0][1]
 
-    return indexs
+    return ind
 
 def choose_existing_course():
     # let the user choose from previously played courses
