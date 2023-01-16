@@ -7,12 +7,37 @@
 from statistics import mean
 import pymysql
 
-
 # connecting to my aws RDS instance
 db = pymysql.connect(host="database-1.cv79u4we1ktk.us-east-1.rds.amazonaws.com", user = "admin", password="Synergyfc18!", database="handicap_calc")
 # cursor instance is here
 cursor = db.cursor()
 
+def add_user(username, password, name):
+    # check to see if account name already exists
+    cursor.execute(f"SELECT * FROM Credentials WHERE Username = '{username}'")
+    account = cursor.fetchall()
+    # if so, return false
+    if len(account) != 0:
+        return False
+    # otherwise, add the new user to the database
+    else:
+        sql = """INSERT INTO Credentials (username, password, name)
+                VALUES (%s, %s, %s)
+        """
+        cursor.execute(sql, (username, password, name))
+        db.commit()
+        return True
+
+def authenticate_user(username, password):
+    cursor.execute(f"SELECT * FROM Credentials WHERE Username = '{username}'")
+    account = cursor.fetchall()
+    if len(account) == 0:
+        return False
+    else:
+        if password == account[0][1]:
+            return account[0][2]
+        else:
+            return False
 
 def get_round_input(new_course=True):
     # new_course = Boolean
@@ -54,14 +79,14 @@ def get_courses():
         course_dict[c[1]] = (c[2], c[3])
     return course_dict
 
-def get_indexes():
+def get_index():
     # read the list of index's as they have been stored
     indexs = []
 
     cursor.execute("SELECT * from Ind")
     inds = cursor.fetchall()
     for i in inds:
-        indexs.append(float(i[2]))
+        indexs.append(float(i[1]))
 
     return indexs
 
@@ -106,18 +131,14 @@ def write_differential_file(diff):
     cursor.execute(sql, (next_ind, "jimmo", float(diff)))
     db.commit()
 
-def write_index_file(index):
-    # insert new index in to Ind table
-    
-    # get indexes from courses table to add another
-    cursor.execute("SELECT id from Ind")
-    inds = cursor.fetchall()
-    next_ind = max([i[0] for i in inds]) + 1
+def write_index_file(username, index):
+    # update row in Ind table to new index for the corresponding user
 
-    sql = """ INSERT INTO Ind (id, username, ind)
-        VALUES (%s, %s, %s)
+    sql = """ UPDATE Ind
+              SET ind = %s
+              WHERE username = %s
         """
-    cursor.execute(sql, (next_ind, "jimmo", float(index)))
+    cursor.execute(sql, (float(index), username))
     db.commit()
 
 def calculate_differential(score, rating, slope):
@@ -144,7 +165,7 @@ def get_differentials():
     return diff_list
 
 def main():
-    handi = get_indexes()
+    handi = get_index()
     if len(handi) != 0:
         print(f"Current handicap: {handi[-1]}")
     choice = choose_option()
@@ -198,4 +219,4 @@ def main():
     print("Thank you!")
 
 
-main()
+#main()
