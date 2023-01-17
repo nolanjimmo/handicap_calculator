@@ -1,10 +1,13 @@
 <html>
+    <head>
+        <link rel="stylesheet" href="static/css/stylesheet.css">
+     </head>
     <body>
 
         {% if fail == False %}
         <h3>Your score has been saved, thank you. Click the button to return to the home page</h3>
         <form action="/" method="POST">
-            <input type="submit" name ="return_home" value="Click Me!">
+            <input type="submit" name ="return_home" value="Go Home!">
         </form> 
         {% endif %}
 
@@ -13,14 +16,15 @@
         {% endif %}
 
         {% if fail == None or fail == True%}
-        <form action="/old_course" method="POST">
+        <h1>Enter a score from a course you haved played before</h1>
+        <form action="/old_course" method="POST" class="stored_courses_form">
             <p>Select the course you are entering a score for</p>
             {% for c in courses %}
-                <input type="radio" id="{{c}}" name="course" value="{{c}}">
+                <input type="radio" id="{{c}}" name="course" value="{{c}}" class="stored_courses">
                 <label for="{{c}}">{{c}}</label><br>
             {% endfor %}
 
-            <p><input type="text" name="score">Gross Score: </p>
+            <p>Gross Score: <input type="text" name="score"></p>
             <p><input type ="submit" value ="submit" /></p>
         </form>
         {% endif %}

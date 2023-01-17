@@ -65,7 +65,7 @@ def index():
 
 @app.route('/splash', methods=['POST'])
 def splash():
-    if request.form['submit_button'] == "new course":
+    if request.form['submit_button'] == "Enter score from new course":
         # go to the page for enterting score at a new course
         return render_template("enter_new.html", fail=None)
     else:

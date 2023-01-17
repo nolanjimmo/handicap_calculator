@@ -1,5 +1,10 @@
 
 <html>
+   <head>
+      <link rel="stylesheet" href="static/css/stylesheet.css">
+      <Link Rel="Stylesheet" Href="Https://Cdnjs.Cloudflare.Com/Ajax/Libs/Font-Awesome/6.0.0-Beta3/Css/All.Min.Css" Integrity="Sha512-Fo3rlrZj/K7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+TcaEPQogQ0KaoGN26/Zrn20ImR1DfuLWnOo7aBA==" Crossorigin="Anonymous" Referrerpolicy="No-Referrer" />
+
+   </head>
     <body>     
        <form action = "/" method = "POST">
            
@@ -7,12 +12,13 @@
    <h1>Credentials were not found in database</h1>
    <h3>Username does not exist or password was incorrect, try again</h3>
 {% endif %}
-<p>Enter Name:</p>           
+<h1>Login</h1>           
   
-<p><input type = "text" name = "nm" /></p>
-<p><input type = "text" name = "pw" /></p>
-  
-<p><input type = "submit" value = "submit" /></p>
+<p>Username: <input type = "text" name = "nm" placeholder="JohnDoe"></p>
+<div class="Password-Field">
+<p>Password: <input type = "password" id="FakePassword" name = "pw" placeholder="Password123"></p>
+</div>  
+<p class="login_submit"><input type = "submit" value = "submit"/></p>
       </form>     
    </body>
 </html>
