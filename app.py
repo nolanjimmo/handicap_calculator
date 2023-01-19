@@ -74,7 +74,7 @@ def splash():
             courses = list(HC.get_courses().keys())
             return render_template("existing.html", courses=courses, fail=None, name=instance_name)
     except:
-        return render_template("splash.html", name=instance_name, ind=instance_ind)
+        return render_template("splash.html", name=instance_name, index=instance_ind)
 
 @app.route('/new_course', methods=['POST'])
 def new_course():
