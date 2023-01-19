@@ -63,15 +63,18 @@ def index():
     else:
         return render_template("login.html")
 
-@app.route('/splash', methods=['POST'])
+@app.route('/splash', methods=['POST', 'GET'])
 def splash():
-    if request.form['submit_button'] == "Enter score from new course":
-        # go to the page for enterting score at a new course
-        return render_template("enter_new.html", fail=None)
-    else:
-        # go to the page for entering score at a stored course
-        courses = list(HC.get_courses().keys())
-        return render_template("existing.html", courses=courses, fail=None)
+    try:
+        if request.form['submit_button'] == "Enter score from new course":
+            # go to the page for enterting score at a new course
+            return render_template("enter_new.html", fail=None, name=instance_name)
+        else:
+            # go to the page for entering score at a stored course
+            courses = list(HC.get_courses().keys())
+            return render_template("existing.html", courses=courses, fail=None, name=instance_name)
+    except:
+        return render_template("splash.html", name=instance_name, ind=instance_ind)
 
 @app.route('/new_course', methods=['POST'])
 def new_course():
@@ -81,7 +84,7 @@ def new_course():
         rating = float(request.form["rating"])
         slope = float(request.form["slope"])
     except:
-        return render_template("enter_new.html", fail=True)
+        return render_template("enter_new.html", fail=True, name=instance_name)
 
     if course_name != "" and score != "" and rating != "" and slope != "":
         # add the actual data to the database and user differentials/index table
@@ -90,10 +93,10 @@ def new_course():
         # second, we have to calculate the differential for this round and then calculate the index with this newest score
         calculate_values(score, rating, slope)
         
-        return render_template("enter_new.html", fail=False)
+        return render_template("enter_new.html", fail=False, name=instance_name)
     
     else:
-        return render_template("enter_new.html", fail=True)
+        return render_template("enter_new.html", fail=True, name=instance_name)
 
 @app.route('/old_course', methods=["POST"])
 def old_course():
@@ -106,10 +109,10 @@ def old_course():
         course_data = courses[course_name]
         print(course_data)
         calculate_values(score, course_data[0], course_data[1])
-        return render_template("existing.html", fail=False)
+        return render_template("existing.html", fail=False, name=instance_name)
 
     except:
-        render_template("existing.html", fail=True)
+        return render_template("existing.html", fail=True, name=instance_name)
  
  
 if __name__ == '__main__':

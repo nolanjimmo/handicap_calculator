@@ -4,6 +4,13 @@
      </head>
     <body>
 
+        <div class="nav">
+            <ul>
+                <li><a href="/splash">Home</a></li>
+                <li>Logged in: {{name}}</li>
+            </ul>
+        </div>
+
         {% if fail == False %}
         <h3>Your score has been saved, thank you. Click the button to return to the home page</h3>
         <form action="/" method="POST">
