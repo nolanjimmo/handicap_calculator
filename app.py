@@ -30,7 +30,7 @@ def calculate_values(score, rating, slope):
 
     # if the index was able to be calculated (index is not -1, which it is intialized to)
     if index != -1:
-        print(f"Handicap Index: {index}")
+        #print(f"Handicap Index: {index}")
         #Write to index file
         HC.write_index_file(instance_username, index)
  
@@ -53,7 +53,6 @@ def index():
             if auth != False:
                 instance_username = username
                 instance_name = auth
-                # TODO: make this part redirect to the account splash page
                 ind = HC.get_index(instance_username)
                 instance_ind = ind
                 return render_template("splash.html", name = auth, index = ind)
@@ -65,6 +64,10 @@ def index():
 
 @app.route('/splash', methods=['POST', 'GET'])
 def splash():
+    global instance_username
+    global instance_name
+    global instance_ind
+
     try:
         if request.form['submit_button'] == "Enter score from new course":
             # go to the page for enterting score at a new course
@@ -78,6 +81,10 @@ def splash():
 
 @app.route('/new_course', methods=['POST'])
 def new_course():
+    global instance_username
+    global instance_name
+    global instance_ind
+
     try:
         course_name = str(request.form["course_name"])
         score = int(request.form["score"])
@@ -92,7 +99,7 @@ def new_course():
 
         # second, we have to calculate the differential for this round and then calculate the index with this newest score
         calculate_values(score, rating, slope)
-        
+        instance_ind = HC.get_index(instance_username)
         return render_template("enter_new.html", fail=False, name=instance_name)
     
     else:
@@ -100,6 +107,10 @@ def new_course():
 
 @app.route('/old_course', methods=["POST"])
 def old_course():
+    global instance_username
+    global instance_name
+    global instance_ind
+
     # first, get the courses we have saved in the database
     courses = HC.get_courses()
     #then we'll use the input from the radio buttons as the key for that dict
@@ -107,12 +118,14 @@ def old_course():
         course_name = request.form["course"]
         score = int(request.form["score"])
         course_data = courses[course_name]
-        print(course_data)
+        #print(course_data)
         calculate_values(score, course_data[0], course_data[1])
+        instance_ind = HC.get_index(instance_username)
         return render_template("existing.html", fail=False, name=instance_name)
 
     except:
-        return render_template("existing.html", fail=True, name=instance_name)
+        courses = list(HC.get_courses().keys())
+        return render_template("existing.html", courses=courses, fail=True, name=instance_name)
  
  
 if __name__ == '__main__':
