@@ -20,5 +20,19 @@
             <input type="submit" name="submit_button" value="Enter score from old course" class="splash_inputs"></input>
         </form>
 
+        <h2>Leaderboard</h2>
+        <table>
+            <tr>
+                <th>Username</th>
+                <th>Handicap Index</th>
+            </tr>
+        {% for l in leader %}
+            <tr>
+                <td>{{l[0]}}</td>
+                <td>{{l[1]}}</td>
+            </tr>
+        {% endfor %}
+        </table>
+
     </body>
 </html>

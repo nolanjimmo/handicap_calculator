@@ -14,6 +14,7 @@ cursor = db.cursor()
 
 def add_user(username, password, name):
     # check to see if account name already exists
+    db.ping(reconnect=True)
     cursor.execute(f"SELECT * FROM Credentials WHERE Username = '{username}'")
     account = cursor.fetchall()
     # if so, return false
@@ -24,11 +25,13 @@ def add_user(username, password, name):
         sql = """INSERT INTO Credentials (username, password, name)
                 VALUES (%s, %s, %s)
         """
+        db.ping(reconnect=True)
         cursor.execute(sql, (username, password, name))
         db.commit()
         return True
 
 def authenticate_user(username, password):
+    db.ping(reconnect=True)
     cursor.execute(f"SELECT * FROM Credentials WHERE Username = '{username}'")
     account = cursor.fetchall()
     if len(account) == 0:
@@ -73,6 +76,7 @@ def get_courses():
     # return dictionary of course name: (rating, slope)
     course_dict = {}
 
+    db.ping(reconnect=True)
     cursor.execute("SELECT * from Courses")
     courses = cursor.fetchall()
     for c in courses:
@@ -82,10 +86,19 @@ def get_courses():
 def get_index(username):
     # read the list of index's as they have been stored
 
+    db.ping(reconnect=True)
     cursor.execute(f"SELECT * from Ind WHERE username = '{username}'")
     ind = cursor.fetchall()[0][1]
 
     return ind
+
+def get_leaderboard():
+    db.ping(reconnect=True)
+    cursor.execute(f"SELECT username, ind FROM Ind \
+                   WHERE username IN ( SELECT Username from Credentials ) \
+                   ORDER BY ind")
+    leaderboard = cursor.fetchall()
+    return leaderboard
 
 def choose_existing_course():
     # let the user choose from previously played courses
@@ -104,6 +117,7 @@ def choose_existing_course():
 def write_course_data(name, rating, slope):
     # insert new course in to Courses table
     # get indexes from courses table to add another
+    db.ping(reconnect=True)
     cursor.execute("SELECT id from Courses")
     inds = cursor.fetchall()
     next_ind = max([i[0] for i in inds]) + 1
@@ -118,6 +132,7 @@ def write_differential_file(username, diff):
     # insert new differential in to Differentials table
 
     # get indexes from courses table to add another
+    db.ping(reconnect=True)
     cursor.execute("SELECT id from Differentials")
     inds = cursor.fetchall()
     next_ind = max([i[0] for i in inds]) + 1
@@ -135,6 +150,7 @@ def write_index_file(username, index):
               SET ind = %s
               WHERE username = %s
         """
+    db.ping(reconnect=True)
     cursor.execute(sql, (float(index), username))
     db.commit()
 
@@ -151,6 +167,7 @@ def get_differentials(username):
     # return the differential history as a list of at most 20 most recent diffs
     diff_list = []
 
+    db.ping(reconnect=True)
     cursor.execute(f"SELECT * from Differentials WHERE username = '{username}'")
     difs = cursor.fetchall()
     for d in difs:

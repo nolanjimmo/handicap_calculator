@@ -43,7 +43,7 @@ def index():
     
     if request.method == 'POST':
         if request.form.get("return_home"):
-            return render_template("splash.html", name=instance_name, index=instance_ind)
+            return render_template("splash.html", name=instance_name, index=instance_ind, leader=HC.get_leaderboard())
         else:
             # here we can check if the username for the login page is valid and then decide what to
             # do from there (authenticate or not)
@@ -55,7 +55,7 @@ def index():
                 instance_name = auth
                 ind = HC.get_index(instance_username)
                 instance_ind = ind
-                return render_template("splash.html", name = auth, index = ind)
+                return render_template("splash.html", name = auth, index = ind, leader=HC.get_leaderboard())
             else:
                 # use fail=True to trigger the error message in template
                 return render_template("login.html", fail=True)
@@ -77,7 +77,7 @@ def splash():
             courses = list(HC.get_courses().keys())
             return render_template("existing.html", courses=courses, fail=None, name=instance_name)
     except:
-        return render_template("splash.html", name=instance_name, index=instance_ind)
+        return render_template("splash.html", name=instance_name, index=instance_ind, leader=HC.get_leaderboard())
 
 @app.route('/new_course', methods=['POST'])
 def new_course():
